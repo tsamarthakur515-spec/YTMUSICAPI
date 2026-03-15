@@ -6,47 +6,39 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "YouTube Music API Running"
+    return "YouTube API Running"
 
 @app.route("/play")
 def play():
 
     query = request.args.get("q")
 
-    if not query:
-        return jsonify({"error": "No query provided"})
-
     ydl_opts = {
         "quiet": True,
-        "format": "best[ext=mp4]/best",
-        "noplaylist": True,
+        "format": "best",
         "default_search": "ytsearch",
-        "extract_flat": False,
-        "nocheckcertificate": True
+        "noplaylist": True,
+        "cookiefile": "cookies.txt"
     }
 
     try:
-
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(f"ytsearch1:{query}", download=False)
 
         video = info["entries"][0]
-
-        video_id = video["id"]
+        vid = video["id"]
 
         stream = video.get("url")
 
         if not stream and "formats" in video:
             stream = video["formats"][-1]["url"]
 
-        data = {
-            "title": video.get("title"),
+        return jsonify({
+            "title": video["title"],
             "duration": video.get("duration"),
-            "thumbnail": f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg",
+            "thumbnail": f"https://img.youtube.com/vi/{vid}/hqdefault.jpg",
             "stream": stream
-        }
-
-        return jsonify(data)
+        })
 
     except Exception as e:
         return jsonify({"error": str(e)})
