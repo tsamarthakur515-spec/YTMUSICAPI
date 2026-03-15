@@ -53,16 +53,22 @@ def stream():
         return jsonify({"error": "No URL provided"})
 
     ydl_opts = {
-        "format": "best",
-        "quiet": True
+        "quiet": True,
+        "format": "best[ext=mp4]/best"
     }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
 
+        stream_url = info.get("url")
+
+        # fallback if url not found
+        if not stream_url and "formats" in info:
+            stream_url = info["formats"][-1]["url"]
+
         return jsonify({
-            "stream": info["url"]
+            "stream": stream_url
         })
 
     except Exception as e:
