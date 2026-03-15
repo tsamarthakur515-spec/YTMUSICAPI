@@ -6,10 +6,10 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "Music API Running"
+    return "YouTube Music API Running"
 
-@app.route("/search")
-def search():
+@app.route("/play")
+def play():
 
     query = request.args.get("q")
 
@@ -18,23 +18,32 @@ def search():
 
     ydl_opts = {
         "quiet": True,
-        "format": "best",
+        "format": "best[ext=mp4]/best",
+        "noplaylist": True,
         "default_search": "ytsearch",
-        "noplaylist": True
+        "extract_flat": False,
+        "nocheckcertificate": True
     }
 
     try:
+
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(f"ytsearch1:{query}", download=False)
 
         video = info["entries"][0]
 
+        video_id = video["id"]
+
+        stream = video.get("url")
+
+        if not stream and "formats" in video:
+            stream = video["formats"][-1]["url"]
+
         data = {
             "title": video.get("title"),
             "duration": video.get("duration"),
-            "thumbnail": video.get("thumbnail"),
-            "video_url": f"https://youtube.com/watch?v={video['id']}",
-            "stream": video.get("url")   # 🔥 direct stream
+            "thumbnail": f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg",
+            "stream": stream
         }
 
         return jsonify(data)
