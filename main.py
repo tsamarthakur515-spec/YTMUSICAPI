@@ -29,12 +29,13 @@ def search():
             info = ydl.extract_info(f"ytsearch1:{query}", download=False)
 
         video = info["entries"][0]
+        video_id = video["id"]
 
         data = {
             "title": video.get("title"),
             "duration": video.get("duration"),
-            "thumbnail": video.get("thumbnail"),
-            "video_url": f"https://youtube.com/watch?v={video['id']}"
+            "thumbnail": f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg",
+            "video_url": f"https://youtube.com/watch?v={video_id}"
         }
 
         return jsonify(data)
@@ -67,6 +68,5 @@ def stream():
     except Exception as e:
         return jsonify({"error": str(e)})
 
-# IMPORTANT FOR RENDER
 port = int(os.environ.get("PORT", 5000))
 app.run(host="0.0.0.0", port=port)
